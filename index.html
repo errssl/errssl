@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>i miss you.</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Outfit',sans-serif;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+#bg{position:fixed;inset:0;z-index:0}
+#bg img{width:100%;height:100%;object-fit:cover;display:block}
+#snow{position:fixed;inset:0;z-index:1;pointer-events:none}
+.player{position:relative;z-index:10;background:transparent;padding:24px 24px 24px;width:320px;display:flex;flex-direction:column;gap:16px}
+.top-row{display:flex;align-items:center;position:relative;height:140px;overflow:hidden}
+.cover-wrap{width:140px;height:140px;border-radius:14px;overflow:hidden;flex-shrink:0;position:relative;z-index:2;box-shadow:0 8px 32px rgba(0,0,0,0.5)}
+.cover-wrap img{width:100%;height:100%;object-fit:cover;display:block}
+#coverPh{width:100%;height:100%;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;font-size:36px;color:rgba(255,255,255,0.2)}
+.vinyl-wrap{position:absolute;left:96px;top:50%;transform:translateY(-50%);width:140px;height:140px;z-index:1;overflow:hidden}
+.vinyl{width:140px;height:140px;border-radius:50%;background:radial-gradient(circle at 50%,#111 0%,#111 22%,transparent 22%),repeating-radial-gradient(circle at 50%,#1a1a1a 0px,#222 3px,#141414 6px,#1e1e1e 9px,#111 12px);box-shadow:0 0 0 3px #0a0a0a,inset 0 0 18px rgba(0,0,0,0.8),4px 4px 20px rgba(0,0,0,0.7);position:relative}
+.vinyl::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:24px;height:24px;border-radius:50%;background:radial-gradient(circle,#444 20%,#1a1a1a 80%)}
+.vinyl::before{content:'';position:absolute;inset:0;border-radius:50%;background:linear-gradient(135deg,rgba(255,255,255,0.07),transparent 55%);z-index:1;pointer-events:none}
+.vinyl.spinning{animation:spin 2.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.song-title{font-size:20px;font-weight:700;color:#fff;letter-spacing:-0.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.progress-area{display:flex;flex-direction:column;gap:6px}
+.bar-bg{width:100%;height:4px;border-radius:4px;background:rgba(255,255,255,0.15);cursor:pointer}
+.bar-fill{height:100%;border-radius:4px;width:0%;background:rgba(255,255,255,0.7);transition:width 0.3s linear;pointer-events:none}
+.time-row{display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.4)}
+.controls{display:flex;align-items:center;justify-content:space-between;padding:0 4px}
+.ctrl-btn{background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.45);display:flex;align-items:center;justify-content:center;border-radius:50%;width:36px;height:36px;transition:color 0.2s,transform 0.15s}
+.ctrl-btn:hover{color:#fff;transform:scale(1.12)}
+.ctrl-btn svg{width:20px;height:20px}
+.play-btn{width:48px;height:48px;background:rgba(255,255,255,0.12);border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.15s,background 0.2s;color:#fff}
+.play-btn:hover{transform:scale(1.08);background:rgba(255,255,255,0.2)}
+.play-btn svg{width:22px;height:22px}
+.vol-row{display:flex;align-items:center;gap:10px}
+.vol-row svg{width:15px;height:15px;color:rgba(255,255,255,0.4);flex-shrink:0}
+input[type=range]{-webkit-appearance:none;flex:1;height:4px;border-radius:4px;background:rgba(255,255,255,0.15);outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:#fff;cursor:pointer}
+</style>
+</head>
+<body>
+<div id="bg"><img src="/background.gif" alt=""/></div>
+<canvas id="snow"></canvas>
+<div class="player">
+  <div class="top-row">
+    <div class="cover-wrap">
+      <div id="coverPh">♪</div>
+      <img id="coverImg" src="" alt="" style="display:none;position:absolute;inset:0"/>
+    </div>
+    <div class="vinyl-wrap"><div class="vinyl" id="vinyl"></div></div>
+  </div>
+  <div class="song-title" id="songTitle">—</div>
+  <div class="progress-area">
+    <div class="bar-bg" id="barBg"><div class="bar-fill" id="barFill"></div></div>
+    <div class="time-row"><span id="tc">0:00</span><span id="td">0:00</span></div>
+  </div>
+  <div class="controls">
+    <button class="ctrl-btn" id="btnPrev"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg></button>
+    <button class="play-btn" id="btnPlay">
+      <svg id="iPlay" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      <svg id="iPause" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 19h4V5H6zm8-14v14h4V5z"/></svg>
+    </button>
+    <button class="ctrl-btn" id="btnNext"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zm8.5-6v6H17V6h-2.5z"/></svg></button>
+  </div>
+  <div class="vol-row">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+    <input type="range" id="vol" min="0" max="1" step="0.01" value="0.8"/>
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+  </div>
+</div>
+<audio id="audio"></audio>
+<script>
+const FOLDERS=["Dream, Ivory","welcome and goodbye", "Telephones", "505"];
+(()=>{const c=document.getElementById('snow'),x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;window.onresize=()=>{c.width=innerWidth;c.height=innerHeight;};const f=Array.from({length:120},()=>({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*2+0.5,sp:Math.random()*0.8+0.3,dx:Math.random()*0.4-0.2}));(function d(){x.clearRect(0,0,c.width,c.height);x.fillStyle='rgba(255,255,255,0.7)';f.forEach(k=>{x.beginPath();x.arc(k.x,k.y,k.r,0,Math.PI*2);x.fill();k.y+=k.sp;k.x+=k.dx;if(k.y>c.height){k.y=0;k.x=Math.random()*c.width;}if(k.x>c.width)k.x=0;if(k.x<0)k.x=c.width;});requestAnimationFrame(d);})();})();
+const sh=a=>{const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;};
+const pl=sh(FOLDERS.map(n=>({title:n,src:`music/${n}/music.mp3`,cover:`music/${n}/photo.jpg`})));
+let cur=0,on=false;
+const au=document.getElementById('audio'),vn=document.getElementById('vinyl'),ci=document.getElementById('coverImg'),cp=document.getElementById('coverPh'),st=document.getElementById('songTitle'),bf=document.getElementById('barFill'),bb=document.getElementById('barBg'),tc=document.getElementById('tc'),td=document.getElementById('td'),ip=document.getElementById('iPlay'),ipa=document.getElementById('iPause'),vl=document.getElementById('vol');
+const fmt=s=>isNaN(s)?'0:00':Math.floor(s/60)+':'+(Math.floor(s%60)<10?'0':'')+Math.floor(s%60);
+function load(i){const t=pl[i];au.src=t.src;st.textContent=t.title;bf.style.width='0%';tc.textContent=td.textContent='0:00';ci.onload=()=>{ci.style.display='block';cp.style.display='none';};ci.onerror=()=>{ci.style.display='none';cp.style.display='flex';};ci.src=t.cover;if(on)au.play().catch(()=>{});}
+function play(v){on=v;ip.style.display=v?'none':'block';ipa.style.display=v?'block':'none';v?(vn.classList.add('spinning'),au.play().catch(()=>{})):(vn.classList.remove('spinning'),au.pause());}
+document.getElementById('btnPlay').onclick=()=>play(!on);
+document.getElementById('btnNext').onclick=()=>{cur=(cur+1)%pl.length;load(cur);if(on)au.play().catch(()=>{});};
+document.getElementById('btnPrev').onclick=()=>{if(au.currentTime>3){au.currentTime=0;return;}cur=(cur-1+pl.length)%pl.length;load(cur);if(on)au.play().catch(()=>{});};
+au.ontimeupdate=()=>{if(!au.duration)return;bf.style.width=(au.currentTime/au.duration*100)+'%';tc.textContent=fmt(au.currentTime);td.textContent=fmt(au.duration);};
+au.onended=()=>{cur=(cur+1)%pl.length;load(cur);au.play().catch(()=>{});};
+bb.onclick=e=>{if(!au.duration)return;const r=bb.getBoundingClientRect();au.currentTime=((e.clientX-r.left)/r.width)*au.duration;};
+vl.oninput=()=>au.volume=vl.value;
+au.volume=0.8;
+pl.length?load(0):(st.textContent='No tracks');
+</script>
+</body>
+</html>
